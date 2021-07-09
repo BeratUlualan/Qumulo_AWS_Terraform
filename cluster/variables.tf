@@ -26,7 +26,7 @@ variable "cluster_name" {
 variable "instance_type" {
   type        = string
   description = "EC2 Instance type"
-  default     = "m5.8xlarge" # current vendor recommendation
+  default     = "m5.xlarge"
 }
 
 variable "key_pair_name" {
