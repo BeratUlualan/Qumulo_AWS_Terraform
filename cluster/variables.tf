@@ -1,3 +1,15 @@
+variable "node_type" {
+  type        = string
+  description = "Qumulo Node Type [af, af-30tib, 5tib, 20tib]"
+  default     = "af"
+}
+
+variable "aws_region" {
+  type        = string
+  description = "Select the AWS region"
+  default     = "us-west-1"
+}
+
 variable "ami_id" {
   type        = string
   description = <<EOS
