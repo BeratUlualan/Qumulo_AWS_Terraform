@@ -1,10 +1,13 @@
 resource "aws_instance" "leader_node" {
-  ami                    = var.ami_id
+  ami                    = data.aws_ami.qumulo_node_type.id
   instance_type          = var.instance_type
   key_name               = var.key_pair_name
   subnet_id              = var.subnet_id
   vpc_security_group_ids = var.security_group_ids
-  tags                   = merge({ Name = "${var.cluster_name} 1" }, var.tags)
+  private_ip             = var.persistent_ips[0]
+  secondary_private_ips  = [local.floating_ip_list[0], local.floating_ip_list["${var.node_count}"], local.floating_ip_list["${2 * var.node_count}"]]
+  tags                   = { Name = "${var.cluster_name} 1" }
+
 
   # This user_data will be used to instruct the leader_node to form a cluster
   # with the other nodes.
@@ -17,12 +20,14 @@ resource "aws_instance" "leader_node" {
 resource "aws_instance" "node" {
   count = var.node_count - 1
 
-  ami                    = var.ami_id
+  ami                    = data.aws_ami.qumulo_node_type.id
   instance_type          = var.instance_type
   key_name               = var.key_pair_name
   subnet_id              = var.subnet_id
   vpc_security_group_ids = var.security_group_ids
-  tags                   = merge({ Name = "${var.cluster_name} ${count.index + 2}" }, var.tags)
+  private_ip             = var.persistent_ips["${count.index + 1}"]
+  secondary_private_ips  = [local.floating_ip_list["${count.index + 1}"], local.floating_ip_list["${count.index + 1 + var.node_count}"], local.floating_ip_list["${count.index + 1 + 2 * var.node_count}"]]
+  tags                   = { Name = "${var.cluster_name} ${count.index + 2}" }
 }
 
 locals {
