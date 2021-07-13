@@ -4,12 +4,20 @@ variable "node_type" {
   default     = "af"
 }
 
+
 variable "aws_region" {
   type        = string
   description = "Select the AWS region"
-  default     = "us-west-1"
+  default     = "us-east-1"
 }
 
+variable "aws_az" {
+  type        = string
+  description = "Select the AWS Availability Zone for the selected AWS region"
+  default     = "us-east-1a"
+}
+
+/*
 variable "ami_id" {
   type        = string
   description = <<EOS
@@ -17,6 +25,7 @@ The AMI id for the version of Qumulo you wish to deploy.
 Get AMIs from the AWS market place at https://go.aws/2UhGu4f
 EOS
 }
+*/
 
 variable "cluster_name" {
   type        = string
@@ -60,8 +69,28 @@ See https://bit.ly/2IYl5YE for Qumulo required ports.
 EOS
 }
 
+variable "cidr_block" {
+  type        = string
+  description = "Cluster CIDR Block"
+}
+
+variable "persistent_ips" {
+  type        = list(string)
+  description = "Cluster Persistent IP Addresses"
+  default     = ["10.0.0.5", "10.0.0.6", "10.0.0.7", "10.0.0.8"]
+}
+variable "floating_ips" {
+  #type        = list(string)
+  type        = string
+  description = "Cluster Floating IP Addresses"
+  default = "10.0.0.9-20"
+}
+
 variable "tags" {
   type        = map(string)
-  description = "Additional tags to add to EC2 instances"
-  default     = {}
+  description = ""
+  default = {
+    Owner   = "Berat Ulualan"
+    Purpose = "Test"
+  }
 }
