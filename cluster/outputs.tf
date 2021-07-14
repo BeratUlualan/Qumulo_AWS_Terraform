@@ -17,11 +17,3 @@ output "temp_admin_password" {
   value       = aws_instance.leader_node.id
   description = "Temporary admin password for the Web UI and API"
 }
-
-output "subnet_main" {
-  value = aws_subnet.main.id
-}
-
-output "security_group_main" {
-  value = [aws_security_group.main.id]
-}
