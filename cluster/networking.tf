@@ -8,7 +8,7 @@ resource "aws_vpc" "main" {
 
 resource "aws_subnet" "main" {
   count             = var.subnet_id == "" || var.vpc_id == "" ? 1 : 0
-  vpc_id            = aws_vpc.main[0].id
+  vpc_id            = var.vpc_id == "" ? aws_vpc.main[0].id : var.vpc_id
   cidr_block        = var.cidr_block
   availability_zone = var.aws_az
 
@@ -23,7 +23,7 @@ resource "aws_security_group" "main" {
   count       = length(var.security_group_ids) == 0 || var.vpc_id == "" ? 1 : 0
   name        = "${var.cluster_name}"
   description = "Allow TLS inbound traffic"
-  vpc_id      = aws_vpc.main[0].id
+  vpc_id      = var.vpc_id == "" ? aws_vpc.main[0].id : var.vpc_id
 
   ingress {
     description = "TLS from VPC"
@@ -59,13 +59,13 @@ resource "aws_security_group" "main" {
 }
 
 resource "aws_internet_gateway" "gw" {
-  vpc_id = aws_vpc.main[0].id
+  vpc_id = var.vpc_id == "" ? aws_vpc.main[0].id : var.vpc_id
 
   tags = var.tags
 }
 
 resource "aws_default_route_table" "example" {
-  default_route_table_id = aws_vpc.main[0].default_route_table_id
+  default_route_table_id = var.vpc_id == "" ? aws_vpc.main[0].default_route_table_id : "${var.vpc_id}.default_route_table_id"
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -80,7 +80,7 @@ resource "aws_route53_zone" "main" {
   name = "${var.route53_zone}"
 
   vpc {
-    vpc_id = aws_vpc.main[0].id
+    vpc_id = var.vpc_id == "" ? aws_vpc.main[0].id : var.vpc_id
   }
 
   tags = var.tags
