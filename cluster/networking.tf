@@ -21,7 +21,7 @@ resource "aws_subnet" "main" {
 
 resource "aws_security_group" "main" {
   count       = length(var.security_group_ids) == 0 || var.vpc_id == "" ? 1 : 0
-  name        = "berat-test"
+  name        = "${var.cluster_name}"
   description = "Allow TLS inbound traffic"
   vpc_id      = aws_vpc.main[0].id
 
@@ -77,7 +77,7 @@ resource "aws_default_route_table" "example" {
 
 
 resource "aws_route53_zone" "main" {
-  name = "test-berat.local"
+  name = "${var.route53_zone}"
 
   vpc {
     vpc_id = aws_vpc.main[0].id
@@ -88,7 +88,7 @@ resource "aws_route53_zone" "main" {
 
 resource "aws_route53_record" "floating-ips" {
   zone_id = aws_route53_zone.main.zone_id
-  name    = "${var.cluster_name}.test-berat.local"
+  name    = "${var.cluster_name}.${var.route53_zone}"
   type    = "A"
   ttl     = 1
   records = local.floating_ip_list
@@ -97,7 +97,7 @@ resource "aws_route53_record" "floating-ips" {
 resource "aws_route53_record" "persistent-ips" {
   count   = var.node_count
   zone_id = aws_route53_zone.main.zone_id
-  name    = "${var.cluster_name}-${count.index + 1}.test-berat.local"
+  name    = "${var.cluster_name}-${count.index + 1}.${var.route53_zone}"
   type    = "A"
   ttl     = 3600
   records = [local.persistent_ip_list["${count.index}"]]
