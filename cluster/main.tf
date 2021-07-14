@@ -2,9 +2,9 @@ resource "aws_instance" "leader_node" {
   ami                    = data.aws_ami.qumulo_node_type.id
   instance_type          = var.instance_type
   key_name               = var.key_pair_name
-  subnet_id              = var.subnet_id
-  vpc_security_group_ids = var.security_group_ids
-  private_ip             = var.persistent_ips[0]
+  subnet_id              = var.subnet_id == "" ? aws_subnet.main[0].id : var.subnet_id
+  vpc_security_group_ids = length(var.security_group_ids) == 0 ? [aws_security_group.main[0].id] : var.security_group_ids
+  private_ip             = local.persistent_ip_list[0]
   secondary_private_ips  = [local.floating_ip_list[0], local.floating_ip_list["${var.node_count}"], local.floating_ip_list["${2 * var.node_count}"]]
   tags                   = { Name = "${var.cluster_name} 1" }
 
@@ -23,9 +23,9 @@ resource "aws_instance" "node" {
   ami                    = data.aws_ami.qumulo_node_type.id
   instance_type          = var.instance_type
   key_name               = var.key_pair_name
-  subnet_id              = var.subnet_id
-  vpc_security_group_ids = var.security_group_ids
-  private_ip             = var.persistent_ips["${count.index + 1}"]
+  subnet_id              = var.subnet_id == "" ? aws_subnet.main[0].id : var.subnet_id
+  vpc_security_group_ids = length(var.security_group_ids) == 0 ? [aws_security_group.main[0].id] : var.security_group_ids
+  private_ip             = local.persistent_ip_list["${count.index + 1}"]
   secondary_private_ips  = [local.floating_ip_list["${count.index + 1}"], local.floating_ip_list["${count.index + 1 + var.node_count}"], local.floating_ip_list["${count.index + 1 + 2 * var.node_count}"]]
   tags                   = { Name = "${var.cluster_name} ${count.index + 2}" }
 }
