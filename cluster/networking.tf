@@ -21,7 +21,7 @@ resource "aws_subnet" "main" {
 
 resource "aws_security_group" "main" {
   count       = length(var.security_group_ids) == 0 || var.vpc_id == "" ? 1 : 0
-  name        = "${var.cluster_name}"
+  name        = var.cluster_name
   description = "Allow TLS inbound traffic"
   vpc_id      = var.vpc_id == "" ? aws_vpc.main[0].id : var.vpc_id
 
@@ -59,25 +59,25 @@ resource "aws_security_group" "main" {
 }
 
 resource "aws_internet_gateway" "gw" {
-  vpc_id = var.vpc_id == "" ? aws_vpc.main[0].id : var.vpc_id
-
-  tags = var.tags
+  count  = var.vpc_id == "" && var.igw_enable == true ? 1 : 0
+  vpc_id = var.vpc_id
+  tags   = var.tags
 }
 
-resource "aws_default_route_table" "example" {
-  default_route_table_id = var.vpc_id == "" ? aws_vpc.main[0].default_route_table_id : "${var.vpc_id}.default_route_table_id"
-
+resource "aws_default_route_table" "main" {
+  count                  = var.vpc_id == "" && var.igw_enable == true ? 1 : 0
+  default_route_table_id = "${var.vpc_id}.default_route_table_id"
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.gw.id
+    gateway_id = aws_internet_gateway.gw[0].id
   }
-
   tags = var.tags
 }
 
 
 resource "aws_route53_zone" "main" {
-  name = "${var.route53_zone}"
+  count = var.route53_zone != "" ? 1 : 0
+  name  = var.route53_zone
 
   vpc {
     vpc_id = var.vpc_id == "" ? aws_vpc.main[0].id : var.vpc_id
@@ -87,7 +87,8 @@ resource "aws_route53_zone" "main" {
 }
 
 resource "aws_route53_record" "floating-ips" {
-  zone_id = aws_route53_zone.main.zone_id
+  count   = var.define_dns_records == true ? 1 : 0
+  zone_id = aws_route53_zone.main[0].zone_id
   name    = "${var.cluster_name}.${var.route53_zone}"
   type    = "A"
   ttl     = 1
@@ -95,8 +96,8 @@ resource "aws_route53_record" "floating-ips" {
 }
 
 resource "aws_route53_record" "persistent-ips" {
-  count   = var.node_count
-  zone_id = aws_route53_zone.main.zone_id
+  count   = var.define_dns_records == true ? var.node_count : 0
+  zone_id = aws_route53_zone.main[0].zone_id
   name    = "${var.cluster_name}-${count.index + 1}.${var.route53_zone}"
   type    = "A"
   ttl     = 3600
