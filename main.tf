@@ -7,11 +7,13 @@ module "qumulo_cluster" {
   instance_type      = "m5.xlarge"
   node_count         = 4
   key_pair_name      = "bulualan2"
-  vpc_id             = ""
-  subnet_id          = ""
+  vpc_id             = "vpc-55160233"
+  subnet_id          = "subnet-3bd08e5e"
   security_group_ids = []
-  cidr_block         = "10.0.0.0/16"
-  persistent_ips     = "10.0.0.5-8"
-  floating_ips       = "10.0.0.9-20"
-  route53_zone = "test-berat.local"
+  cidr_block         = "172.31.0.0/24"
+  persistent_ips     = "172.31.0.5-8"
+  floating_ips       = "172.31.0.9-20"
+  define_dns_records = false
+  route53_zone       = ""
+  igw_enable         = true
 }
