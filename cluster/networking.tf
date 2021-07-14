@@ -7,7 +7,7 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_subnet" "main" {
-  count             = var.subnet_id == "" && var.vpc_id == "" ? 1 : 0
+  count             = var.subnet_id == "" || var.vpc_id == "" ? 1 : 0
   vpc_id            = aws_vpc.main[0].id
   cidr_block        = var.cidr_block
   availability_zone = var.aws_az
@@ -20,7 +20,7 @@ resource "aws_subnet" "main" {
 }
 
 resource "aws_security_group" "main" {
-  count       = length(var.security_group_ids) == 0 && var.vpc_id == "" ? 1 : 0
+  count       = length(var.security_group_ids) == 0 || var.vpc_id == "" ? 1 : 0
   name        = "berat-test"
   description = "Allow TLS inbound traffic"
   vpc_id      = aws_vpc.main[0].id
