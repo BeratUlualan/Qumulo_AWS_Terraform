@@ -1,4 +1,5 @@
 resource "aws_vpc" "main" {
+  count                = var.vpc_id == "" ? 1 : 0
   cidr_block           = var.cidr_block
   enable_dns_support   = true
   enable_dns_hostnames = true
@@ -6,7 +7,8 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_subnet" "main" {
-  vpc_id            = aws_vpc.main.id
+  count             = var.subnet_id == "" && var.vpc_id == "" ? 1 : 0
+  vpc_id            = aws_vpc.main[0].id
   cidr_block        = var.cidr_block
   availability_zone = var.aws_az
 
@@ -18,9 +20,10 @@ resource "aws_subnet" "main" {
 }
 
 resource "aws_security_group" "main" {
+  count       = length(var.security_group_ids) == 0 && var.vpc_id == "" ? 1 : 0
   name        = "berat-test"
   description = "Allow TLS inbound traffic"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.main[0].id
 
   ingress {
     description = "TLS from VPC"
@@ -56,13 +59,13 @@ resource "aws_security_group" "main" {
 }
 
 resource "aws_internet_gateway" "gw" {
-  vpc_id = aws_vpc.main.id
+  vpc_id = aws_vpc.main[0].id
 
   tags = var.tags
 }
 
 resource "aws_default_route_table" "example" {
-  default_route_table_id = aws_vpc.main.default_route_table_id
+  default_route_table_id = aws_vpc.main[0].default_route_table_id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -77,7 +80,7 @@ resource "aws_route53_zone" "main" {
   name = "test-berat.local"
 
   vpc {
-    vpc_id = aws_vpc.main.id
+    vpc_id = aws_vpc.main[0].id
   }
 
   tags = var.tags
@@ -97,5 +100,5 @@ resource "aws_route53_record" "persistent-ips" {
   name    = "${var.cluster_name}-${count.index + 1}.test-berat.local"
   type    = "A"
   ttl     = 3600
-  records = [var.persistent_ips["${count.index}"]]
+  records = [local.persistent_ip_list["${count.index}"]]
 }
