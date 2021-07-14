@@ -109,3 +109,13 @@ variable "route53_zone" {
   type        = string
   description = "Cluster Floating IP Addresses"
 }
+
+variable "define_dns_records" {
+  type    = bool
+  default = true
+} 
+
+variable "igw_enable" {
+  type = bool
+  default = true
+}
