@@ -52,8 +52,17 @@ variable "node_count" {
   default     = 4
 }
 
+variable "vpc_id" {
+  type        = string
+  default     = ""
+  description = <<EOS
+VPC ID where nodes will be created.
+EOS
+}
+
 variable "subnet_id" {
   type        = string
+  default     = ""
   description = <<EOS
 VPC Subnet ID where nodes will be created. Must be in the same VPC as the
 security_group_ids
@@ -62,6 +71,7 @@ EOS
 
 variable "security_group_ids" {
   type        = list(string)
+  default     = []
   description = <<EOS
 Security groups to create clustered nodes in. Must be in the same VPC as the
 subnet_id.
@@ -75,15 +85,15 @@ variable "cidr_block" {
 }
 
 variable "persistent_ips" {
-  type        = list(string)
+  type        = string
   description = "Cluster Persistent IP Addresses"
-  default     = ["10.0.0.5", "10.0.0.6", "10.0.0.7", "10.0.0.8"]
+  #default     = "10.0.0.5-8"
 }
+
 variable "floating_ips" {
-  #type        = list(string)
   type        = string
   description = "Cluster Floating IP Addresses"
-  default = "10.0.0.9-20"
+  #default     = "10.0.0.9-20"
 }
 
 variable "tags" {
@@ -93,4 +103,9 @@ variable "tags" {
     Owner   = "Berat Ulualan"
     Purpose = "Test"
   }
+}
+
+variable "route53_zone" {
+  type        = string
+  description = "Cluster Floating IP Addresses"
 }
